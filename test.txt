@@ -1,0 +1,134 @@
+ghci>parseEof expr "12+11"
+[(Plus (Const 12) (Const 11),"")]
+ghci>parseEof expr "12-11"
+[(Minus (Const 12) (Const 11),"")]
+
+Position test
+ghci>parseEof pos "(1,1)"
+[(Abs (Const 1) (Const 1),"")]
+ghci>parseEof pos "+(1,1)"
+[(Rel (Const 1) (Const 1),"")]
+
+
+sidents test
+ghci>parseEof sidents "aBaB"
+[(["aBaB"],""),(["aB","aB"],"")]
+
+ghci>parseEof colour " blue"
+[(Blue,"")]
+
+ghci>parseEof command "aP->(1,2)"
+[(Move ["aP"] (Abs (Const 1) (Const 2)),"")]
+
+ghci>parseEof expr "1-1"
+[(Minus (Const 1) (Const 1),"")]
+ghci>parseEof expr "1"
+[(Const 1,"")]
+
+ghci>parseEof expr "(1)"
+[(Const 1,"")]
+
+ghci>parseEof command "aP->(1,2)@Ap"
+[(At (Move ["aP"] (Abs (Const 1) (Const 2))) "Ap","")]
+
+ghci>parseEof command "aP->(1,2)||aP->(1,2)"
+[(Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const
+ 2))),"")]
+ 
+ ghci>parseEof expr "(1-1)-1"
+[(Minus (Minus (Const 1) (Const 1)) (Const 1),"")]
+
+definition
+
+ghci>parseEof definition "viewdef Ap (1) (1)"
+[(Viewdef "Ap" (Const 1) (Const 1),"")]
+
+ghci>parseEof definition "viewdef Ap (ap.y) 1 "
+[(Viewdef "Ap" (Yproj "ap") (Const 1),"")]
+
+ghci>parseEof definition "rectangle ap (1) (1) (1) (1) blue"
+[(Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue,"")]
+
+ghci>parseEof definition "circle apple (1) (1) (1) green"
+[(Circle "apple" (Const 1) (Const 1) (Const 1) Green,"")]
+
+ghci>parseEof definition "view AboveScene"
+[(View "AboveScene","")]
+
+ghci>parseEof definition "group AboveScene[CastleView]"
+[(Group "AboveScene" ["CastleView"],""),(Group "AboveScene" ["Castle","View"],""
+)]
+ghci>parseEof definition "group AboveScene[Castle]"
+[(Group "AboveScene" ["Castle"],"")]
+
+
+ghci>parseString "rectangle box (10) (400) (20) (20) green"
+Right [Def (Rectangle "box" (Const 10) (Const 400) (Const 20) (Const 20) Green)]
+
+ghci>parseString "viewdef Default (400) (400)"
+Right [Def (Viewdef "Default" (Const 400) (Const 400))]
+
+
+ghci>parseString " box -> (10, 200) box -> +(100, 0) box -> (110,400) box -> +(0-100, 0)"
+Right [Com (Move ["box"] (Abs (Const 10) (Const 200))),Com (Move ["box"] (Rel (Const 100) (Const 0))),Com (Move ["box"] (Abs (Const 110) (Const 400))),Com (Move
+ ["box"] (Rel (Minus (Const 0) (Const 100)) (Const 0)))]
+ 
+ 
+ 
+ ghci>parseString "viewdef Default (400) (400) rectangle box (10) (400) (20) (20) green box -> (10, 200) box -> +(100, 0) box -> (110,400) box -> +(0-100, 0)"
+Right [Def (Viewdef "Default" (Const 400) (Const 400)),Def (Rectangle "box" (Const 10) (Const 400) (Const 20) (Const 20) Green),Com (Move ["box"] (Abs (Const 10) (Const 200))),Com (Move ["box"] (Rel (Const 100) (Const 0))),Com (Move ["box"] (Abs (Const 110) (Const 400))),Com (Move ["box"] (Rel (Minus (Const 0) (Const 100)) (Const 0)))]
+
+ghci>parseEof defcom "move aP->(1,2)||aP->(1,2)"
+[(Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),""),(Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),"")]
+
+ghci>parseEof defcom "rectangle ap 1 1 1 1 blue"
+[(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Con
+st 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),""),(Def (Rectangle "ap" (Const 1) (Const 1) (Const 1) (Const 1) Blue),"")]
+
+
+ghci>parseEof defcoms "move ti->(1,2)||aP->(1,2)"
+[([Com (Par (Move ["move","ti"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Co
+nst 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","ti"] (Abs (Const 1) (Const
+ 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],"")]
+ghci>parseEof defcom "move ti->(1,2)||aP->(1,2)"
+[(Com (Par (Move ["move","ti"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Con
+st 1) (Const 2)))),""),(Com (Par (Move ["mo","ve","ti"] (Abs (Const 1) (Const 2)
+)) (Move ["aP"] (Abs (Const 1) (Const 2)))),"")]
+
+
+ghci>parseEof program "move pi->(1,2)||aP->(1,4)"
+[([Com (Par (Move ["move","pi"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Co
+nst 1) (Const 4))))],""),([Com (Par (Move ["mo","ve","pi"] (Abs (Const 1) (Const
+ 2))) (Move ["aP"] (Abs (Const 1) (Const 4))))],"")]
+
+ghci>parseEof program "move aP -> (1,2) || aP-> (1,2) aP -> (1,2) || aP-> (1,2) aP -> (1,2) || aP -> (1,2)"
+[([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs
+ (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)
+)))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move
+ ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1)
+ (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["a
+P"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))]
+,""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["a
+P"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Co
+nst 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"]
+(Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],"")
+,([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"]
+(Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const
+2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs
+ (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([C
+om (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["move","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs
+ (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))) ,Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Cons
+t 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["a
+P"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const
+2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const
+ 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP
+"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2
+)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"]
+ (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"
+] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))), Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)
+))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"]
+(Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (
+Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Pa
+r (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (
+Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (C
+onst 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],""),([Com (Par (Move ["mo","ve","aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2)))),Com (Par (Move ["aP"] (Abs (Const 1) (Const 2))) (Move ["aP"] (Abs (Const 1) (Const 2))))],"")]
